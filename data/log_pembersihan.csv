@@ -1,0 +1,10 @@
+masalah,jumlah_baris,penanganan
+waktu tidak terbaca,0,dihapus
+baris duplikat persis,80,drop_duplicates
+waktu kembar dengan nilai beda,0,ambil baris pertama
+konsumsi negatif atau 99999 (kode galat),40,diubah jadi kosong
+konsumsi tepat 0 (sensor mati),41,diubah jadi kosong
+jam hilang di rentang waktu,131,diisi lewat reindex jam penuh
+suhu_luar_C kosong,226,interpolasi waktu (maks 6 jam)
+kelembaban_luar_pct kosong,226,interpolasi waktu (maks 6 jam)
+okupansi_orang kosong,347,interpolasi waktu (maks 6 jam)

@@ -1,0 +1,38 @@
+{
+  "versi": "1.0",
+  "model": "HistGradientBoostingRegressor(loss=absolute_error)",
+  "params": {
+    "max_iter": 300,
+    "learning_rate": 0.1,
+    "max_leaf_nodes": 15
+  },
+  "fitur": [
+    "jam",
+    "hari_minggu",
+    "bulan",
+    "akhir_pekan",
+    "hari_libur",
+    "suhu_luar_C",
+    "kelembaban_luar_pct",
+    "okupansi_orang",
+    "lag_24",
+    "lag_48",
+    "lag_168",
+    "rata_jam_sama_7h",
+    "rata_kemarin"
+  ],
+  "split": {
+    "train": "s.d. 2026-02",
+    "validation": "2026-03 s.d. 2026-04",
+    "test": "2026-05 s.d. 2026-06"
+  },
+  "metrik": {
+    "baseline_va": 21.846,
+    "ridge_va": 11.351,
+    "hgb_va": 5.302,
+    "baseline_te": 24.328,
+    "final_te": 4.942,
+    "rata_konsumsi_te": 146.008
+  },
+  "satuan": "kWh"
+}
