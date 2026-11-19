@@ -4,9 +4,8 @@
 
 | Anggota | NIM | Bagian yang dikerjakan |
 |---|---|---|
-| [nama] | [NIM] | EDA dan pembersihan data |
-| [nama] | [NIM] | Fitur, model, dan evaluasi |
-| [nama] | [NIM] | API dan aplikasi |
+| Muhammad Randy Kurniawan | 2405315 | EDA dan pembersihan data serta API dan aplikasi|
+| Muhammad Nur Kahfi | 2402905 | Fitur, model, dan evaluasi |
 
 ## Masalah dan pengguna
 
