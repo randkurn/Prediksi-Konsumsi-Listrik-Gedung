@@ -43,39 +43,78 @@ def validasi(tanggal, suhu_C, okupansi_puncak):
 
 
 def _profil():
-    h = _hist.dropna(subset=["okupansi_orang"])
-    kerja = h[(h.index.dayofweek < 5) & (h.hari_libur == 0)]
-    prof_kerja = kerja.groupby(kerja.index.hour)["okupansi_orang"].mean()
-    prof_kerja = prof_kerja / prof_kerja.max()
-    prof_lain = h.groupby(h.index.hour)["okupansi_orang"].mean()
-    prof_lain = prof_lain / max(prof_lain.max(), 1)
-    return prof_kerja, prof_lain
+    """Bentuk okupansi per jam sebagai pecahan dari puncak harian (rata-rata semua hari sejenis)."""
+    h = _hist.dropna(subset=["okupansi_orang"]).copy()
+    h["tgl"] = h.index.normalize()
+    h["pecah"] = h["okupansi_orang"] / h.groupby("tgl")["okupansi_orang"].transform("max").clip(lower=1)
+    kerja = h[(h.index.day_of_week < 5) & (h.hari_libur == 0)]
+    return kerja.groupby(kerja.index.hour)["pecah"].mean(), h.groupby(h.index.hour)["pecah"].mean()
 
 
-def prediksi_hari(tanggal, suhu_C, okupansi_puncak, hari_libur=0):
-    """Mengembalikan DataFrame 24 baris (jam, kWh)."""
-    t = validasi(tanggal, suhu_C, okupansi_puncak)
+def level_okupansi():
+    """Tingkat okupansi untuk antarmuka, diturunkan dari puncak harian di riwayat."""
+    h = _hist["okupansi_orang"].resample("D").max().dropna()
+    kerja, akhir = h[h.index.day_of_week < 5], h[h.index.day_of_week >= 5]
+    r = lambda v: int(round(v / 10) * 10)
+    normal = r(kerja.median())
+    return {"Sepi": r(akhir.median()), "Sedang": r(normal / 2), "Normal": normal, "Ramai": r(kerja.max())}
+
+
+def default_input(tgl):
+    """Nilai tipikal untuk hari yang belum diisi pengguna."""
+    t = pd.Timestamp(tgl)
+    ref = _hist[_hist.index.month == t.month]
+    lv = level_okupansi()
+    return {"suhu_C": round(float(ref["suhu_luar_C"].mean()), 1),
+            "okupansi_puncak": lv["Sepi"] if t.day_of_week >= 5 else lv["Normal"], "hari_libur": 0}
+
+
+_TOT = (_hist[TARGET].resample("D").mean() * 24).dropna()
+_LIB = _hist["hari_libur"].resample("D").max().reindex(_TOT.index).fillna(0)
+_AKHIR = (_TOT.index.day_of_week >= 5) | (_LIB == 1)
+_Q = {False: _TOT[~_AKHIR].quantile([1 / 3, 2 / 3]).values, True: _TOT[_AKHIR].quantile([1 / 3, 2 / 3]).values}
+
+
+def kategori(tgl, total, libur=0):
+    """Rendah, Normal, atau Tinggi dibanding hari sejenis (kerja atau libur) di riwayat."""
+    lo, hi = _Q[pd.Timestamp(tgl).day_of_week >= 5 or libur == 1]
+    return "Rendah" if total < lo else ("Tinggi" if total > hi else "Normal")
+
+
+def prediksi_rentang(inputs):
+    """inputs: {tanggal: {suhu_C, okupansi_puncak, hari_libur}}. Mengembalikan {Timestamp: Series 24 jam}.
+    Hari di antara data terakhir dan tanggal yang diminta memakai nilai tipikal."""
+    norm = {}
+    for k, v in inputs.items():
+        t = validasi(k, v["suhu_C"], v["okupansi_puncak"])
+        norm[t] = {"suhu_C": v["suhu_C"], "okupansi_puncak": v["okupansi_puncak"], "hari_libur": int(v.get("hari_libur", 0))}
+    akhir = max(norm)
     hist = _hist.copy()
     pk, pl = _profil()
-    hari = list(pd.date_range(TERAKHIR + pd.Timedelta(days=1), t)) if t > TERAKHIR else [t]
+    hari = list(pd.date_range(TERAKHIR + pd.Timedelta(days=1), akhir)) if akhir > TERAKHIR else sorted(norm)
+    hasil = {}
     for h in hari:
+        v = norm.get(h) or default_input(h)
         idx = pd.date_range(h, periods=24, freq="h")
-        akhir = h.dayofweek >= 5 or (h == t and hari_libur == 1)
-        prof = pl if akhir else pk
-        # suhu: pola harian dari riwayat bulan yang sama, digeser ke rata-rata input
-        ref = hist[hist.index.month == h.month]
-        pola_suhu = ref.groupby(ref.index.hour)["suhu_luar_C"].mean()
-        suhu = pola_suhu.values - pola_suhu.mean() + (suhu_C if h == t else pola_suhu.mean())
+        lib = int(v.get("hari_libur", 0))
+        prof = pl if (h.day_of_week >= 5 or lib == 1) else pk
+        ref = _hist[_hist.index.month == h.month]
+        pola = ref.groupby(ref.index.hour)["suhu_luar_C"].mean()
         lembab = ref.groupby(ref.index.hour)["kelembaban_luar_pct"].mean().values
         baru = pd.DataFrame({
-            "suhu_luar_C": suhu, "kelembaban_luar_pct": lembab,
-            "okupansi_orang": (prof.values * (okupansi_puncak if h == t else ref["okupansi_orang"].max())).round(),
-            "hari_libur": hari_libur if h == t else 0, TARGET: np.nan}, index=idx)
-        if h.dayofweek >= 5 and h != t:
-            baru["okupansi_orang"] = (pl.values * 60).round()
+            "suhu_luar_C": pola.values - pola.mean() + v["suhu_C"], "kelembaban_luar_pct": lembab,
+            "okupansi_orang": (prof.values * v["okupansi_puncak"]).round(),
+            "hari_libur": lib, TARGET: np.nan}, index=idx)
         hist = pd.concat([hist.loc[hist.index < idx[0]], baru])
         X = buat_fitur(hist).loc[idx]
         pred = _model.predict(X[_meta["fitur"]])
         hist.loc[idx, TARGET] = pred
-    out = pd.DataFrame({"jam": range(24), "prediksi_kWh": np.round(pred, 1)})
-    return out
+        if h in norm:
+            hasil[h] = pd.Series(np.round(pred, 1), index=idx)
+    return hasil
+
+
+def prediksi_hari(tanggal, suhu_C, okupansi_puncak, hari_libur=0):
+    """Mengembalikan DataFrame 24 baris (jam, kWh) untuk satu hari."""
+    s = prediksi_rentang({tanggal: dict(suhu_C=suhu_C, okupansi_puncak=okupansi_puncak, hari_libur=hari_libur)})
+    return pd.DataFrame({"jam": range(24), "prediksi_kWh": list(s.values())[0].values})

@@ -43,7 +43,7 @@ pt = pd.Series(final.predict(X[te]), index=X.index[te])
 w = slice("2026-06-15", "2026-06-21")
 plt.figure(figsize=(10, 3.5)); y[te][w].plot(label="aktual"); pt[w].plot(label="prediksi"); base[te][w].plot(label="baseline", alpha=.5)
 plt.ylabel("kWh"); plt.legend(); plt.tight_layout(); plt.savefig("figures/prediksi_vs_aktual.png", dpi=120)
-plt.figure(figsize=(8, 3.5)); d.groupby([d.index.hour, d.index.dayofweek >= 5])[TARGET].mean().unstack().plot(); plt.legend(["hari kerja", "akhir pekan"]); plt.xlabel("jam"); plt.ylabel("rata-rata kWh"); plt.tight_layout(); plt.savefig("figures/profil_jam.png", dpi=120)
+plt.figure(figsize=(8, 3.5)); d.groupby([d.index.hour, d.index.day_of_week >= 5])[TARGET].mean().unstack().plot(); plt.legend(["hari kerja", "akhir pekan"]); plt.xlabel("jam"); plt.ylabel("rata-rata kWh"); plt.tight_layout(); plt.savefig("figures/profil_jam.png", dpi=120)
 from sklearn.inspection import permutation_importance
 pi = permutation_importance(final, X[te][ok[te]], y[te], n_repeats=3, random_state=0, scoring="neg_mean_absolute_error")
 imp = pd.Series(pi.importances_mean, FITUR).sort_values(); imp.to_csv("artifacts/importance.csv")

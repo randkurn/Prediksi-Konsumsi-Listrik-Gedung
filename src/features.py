@@ -52,7 +52,7 @@ def buat_fitur(d: pd.DataFrame) -> pd.DataFrame:
     """d: indeks per jam, kolom bersih. Semua lag minimal 24 jam."""
     x = pd.DataFrame(index=d.index)
     x["jam"] = d.index.hour
-    x["hari_minggu"] = d.index.dayofweek
+    x["hari_minggu"] = d.index.day_of_week
     x["bulan"] = d.index.month
     x["akhir_pekan"] = (x["hari_minggu"] >= 5).astype(int)
     for c in ["hari_libur", "suhu_luar_C", "kelembaban_luar_pct", "okupansi_orang"]:
