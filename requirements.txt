@@ -5,4 +5,4 @@ joblib
 matplotlib
 fastapi
 uvicorn
-streamlit
+streamlit>=1.40

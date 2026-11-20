@@ -4,8 +4,9 @@
 
 | Anggota | NIM | Bagian yang dikerjakan |
 |---|---|---|
-| Muhammad Randy Kurniawan | 2405315 | EDA dan pembersihan data serta API dan aplikasi|
-| Muhammad Nur Kahfi | 2402905 | Fitur, model, dan evaluasi |
+| [nama] | [NIM] | EDA dan pembersihan data |
+| [nama] | [NIM] | Fitur, model, dan evaluasi |
+| [nama] | [NIM] | API dan aplikasi |
 
 ## Masalah dan pengguna
 
@@ -56,7 +57,8 @@ curl -X POST localhost:8000/prediksi -H "Content-Type: application/json" \
 notebooks/analisis.ipynb   EDA sampai evaluasi
 data/                      raw.csv, bersih.csv, log_pembersihan.csv
 src/features.py            pembersihan dan fitur (dipakai saat latih dan prediksi)
-src/train.py, predict.py   pelatihan dan prediksi 24 jam
+src/train.py, predict.py   pelatihan dan prediksi per jam (1 sampai 7 hari)
+src/tampilan.py            komponen tampilan (HTML dan format angka)
 artifacts/                 model.joblib + metadata.json
 app/                       API FastAPI dan antarmuka Streamlit
 figures/                   grafik untuk laporan
@@ -66,7 +68,7 @@ figures/                   grafik untuk laporan
 
 - Prediksi untuk tanggal setelah data terakhir (30 Juni 2026) memakai prediksi sendiri sebagai lag, jadi dibatasi
   7 hari. Untuk pemakaian nyata, data konsumsi terbaru perlu dialirkan setiap hari.
-- Aplikasi hanya menerima satu angka suhu dan okupansi puncak. Pola per jam diturunkan dari riwayat.
+- Aplikasi menerima satu angka suhu dan satu tingkat okupansi per hari. Pola per jam diturunkan dari riwayat.
 - Hanya satu gedung dan 2,5 tahun data, belum ada musim yang berulang lebih dari dua kali.
 - Model belum pernah melihat kejadian luar biasa (renovasi, pemadaman, perubahan jam kerja).
 
