@@ -4,7 +4,8 @@
 
 | Anggota | NIM | Bagian yang dikerjakan |
 
-| MUHAMMAD NUR KAHFI | 2402905 | EDA dan pembersihan data, API dan aplikasi |/
+| MUHAMMAD NUR KAHFI | 2402905 | EDA dan pembersihan data, API dan aplikasi |
+|
 | MUHAMMAD RANDY KURNIAWAN | 2405315 | Fitur, model, dan evaluasi |
 
 
