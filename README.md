@@ -3,10 +3,10 @@
 **Kasus:** 02 Konsumsi Energi Gedung · **Aplikasi:** [tautan aplikasi] · **Video:** [tautan video]
 
 | Anggota | NIM | Bagian yang dikerjakan |
-|---|---|---|
-| [nama] | [NIM] | EDA dan pembersihan data |
-| [nama] | [NIM] | Fitur, model, dan evaluasi |
-| [nama] | [NIM] | API dan aplikasi |
+
+| MUHAMMAD NUR KAHFI | 2402905 | EDA dan pembersihan data, API dan aplikasi |
+| MUHAMMAD RANDY KURNIAWAN | 2405315 | Fitur, model, dan evaluasi |
+
 
 ## Masalah dan pengguna
 
